@@ -96,11 +96,8 @@ class Transformer(nn.Module):
         self.future_masking = FutureMasking()
 
         self.mask = torch.triu(torch.ones(1, num_patches, num_patches), diagonal=1)
-        #self.mask = (self.mask == 0)
         self.mask = self.mask.bool()
 
-
-        #self.positional_embedding = PositionalEmbedding(seq_len, dim)
         self.token_embedding = TokenEmbedding(words, dim)
         self.dropout_embedding = nn.Dropout(dropout)
 
@@ -131,16 +128,11 @@ class Transformer(nn.Module):
                 ) -> Union[torch.Tensor, Tuple[torch.Tensor, List[Past]]]:
         b = x.size(0)
 
-        #offset = past[0][0].size(-2) if past is not None else 0
-        #print(x.size())
         x = self.to_patch_embedding(x)
         
-        #print('Pat:', x.size())
-        #print('Pos:', self.pos_embedding.size())
         x = x + self.pos_embedding
         
         # Use token embedding and positional embedding layers.
-        #x = self.token_embedding(x) + self.positional_embedding(x, offset)
         x = self.dropout_embedding(x)
         # Apply transformer layers sequentially.
         present = []
@@ -158,19 +150,11 @@ class Transformer(nn.Module):
         x = self.ln_up(x)
         x = self.upsample(x)
 
-        #print(x.size())
-
         x = self.from_patch(x)
         x = self.to_img(x)
 
-        #print(x.size())
-
         x = self.ln_head(x)
-        #x = self.token_embedding(x, transposed=True)
-
-        #print(x.size())
-
-        #x = x if self.training else (x, present)
+        
         logits = self.head(x)        
         logits = logits.view(b, -1, 30)
         return logits
@@ -181,8 +165,8 @@ if __name__ == '__main__':
     #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     #os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3,4,5,7'
     #print('Visible Device:', os.environ['CUDA_VISIBLE_DEVICES'])
-    #import numpy as np
-    #import cv2
+    import numpy as np
+    import cv2
     model = Transformer( channels = 1,
                          patch_size = 4,
                          image_size = 32,
@@ -198,17 +182,11 @@ if __name__ == '__main__':
                          num_classes = 30)
     
     x = torch.zeros((8, 1, 32, 32)).type(torch.float32)
-    #x = torch.zeros((8, 1024)).type(torch.float32)
-    #x = cv2.imread(r'C:\Users\william\ImageGPT\plaid.png', 0)
-    #x = np.expand_dims(x, 0)
-    #x = np.expand_dims(x, 0)
-    #x = torch.from_numpy(x)
-    #x = x.to(torch.float32)
-    #x /= 255
+    
     logits = model(x)
     print('Logits:', logits.size())
 
-    #plt.imshow(logits)
+    
     
     
     
